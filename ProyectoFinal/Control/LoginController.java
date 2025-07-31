@@ -17,7 +17,7 @@ public class LoginController {
         this.sistema = sistema;
         
         // Configurar acción del botón de login
-        vista.getBtnLogin().addActionListener(new ActionListener() {
+        vista.btnLogin.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 autenticarUsuario();
@@ -26,8 +26,8 @@ public class LoginController {
     }
 
     private void autenticarUsuario() {
-        String usuario = vista.getUsuario();
-        String contrasena = vista.getContrasena();
+        String usuario = vista.txtUsuario.getText();
+        String contrasena = vista.txtContrasena.getText();
         
         // Autenticación básica
         if (usuario.equals("admin") && contrasena.equals("admin123")) {

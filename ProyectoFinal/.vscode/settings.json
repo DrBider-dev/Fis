@@ -1,0 +1,9 @@
+{
+    "java.project.sourcePaths": [
+        "."
+    ],
+    "java.project.referencedLibraries": [
+        "Libraries\\AbsoluteLayout.jar",
+        "Libraries\\flatlaf-3.6.jar"
+    ]
+}
