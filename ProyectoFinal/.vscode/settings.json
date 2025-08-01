@@ -3,7 +3,8 @@
         "."
     ],
     "java.project.referencedLibraries": [
-        "Libraries\\AbsoluteLayout.jar",
-        "Libraries\\flatlaf-3.6.jar"
+        "Libraries\\sqlite-jdbc-3.50.3.0.jar",
+        "Libraries\\flatlaf-3.6.jar",
+        "Libraries\\AbsoluteLayout.jar"
     ]
 }

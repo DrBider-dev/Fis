@@ -30,4 +30,9 @@ public class Producto {
     public double getPrecio() { return precio; }
     public int getCantidad() { return cantidad; }
     public Date getFechaVencimiento() { return fechaVencimiento; }
+
+    // Setter para cantidad
+    public void setCantidad(int cantidad) {
+        this.cantidad = cantidad;
+    }
 }

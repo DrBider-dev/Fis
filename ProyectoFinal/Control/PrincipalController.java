@@ -6,6 +6,7 @@ import View.PrincipalView;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 
+
 public class PrincipalController {
     private PrincipalView vista;
     private Sistema sistema;
@@ -112,6 +113,8 @@ public class PrincipalController {
         for (LineaVenta linea : ventaActual.getLineasVenta()) {
             Producto producto = linea.getProducto();
             producto.actualizarStock(-linea.getCantidad());
+            // Actualizar el producto en la base de datos
+            sistema.actualizarProducto(producto);
         }
         
         // Guardar venta
@@ -149,6 +152,7 @@ public class PrincipalController {
         try {
             int cantidad = Integer.parseInt(input);
             producto.actualizarStock(cantidad);
+            sistema.actualizarProducto(producto); // Actualizar en la base de datos
             actualizarTablaInventario();
         } catch (NumberFormatException ex) {
             JOptionPane.showMessageDialog(vista, "Ingrese un número válido", "Error", JOptionPane.ERROR_MESSAGE);
@@ -182,7 +186,7 @@ public class PrincipalController {
                 
                 // Crear nuevo producto (sin fecha de vencimiento por ahora)
                 Producto nuevoProducto = new Producto(id, nombre, categoria, precio, cantidad, null);
-                sistema.agregarProducto(nuevoProducto);
+                sistema.agregarProducto(nuevoProducto); // Esto guarda en la base de datos
                 actualizarTablaInventario();
                 
             } catch (NumberFormatException ex) {

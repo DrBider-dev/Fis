@@ -22,6 +22,15 @@ public class Venta {
         total += lineaVenta.getSubtotal();
     }
 
+    // Setters adicionales para la base de datos
+    public void setFecha(Date fecha) {
+        this.fecha = fecha;
+    }
+
+    public void setTotal(double total) {
+        this.total = total;
+    }
+
     // Getters
     public int getId() { return id; }
     public Date getFecha() { return fecha; }
