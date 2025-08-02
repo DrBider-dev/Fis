@@ -17,6 +17,8 @@ public class Sistema {
         cargarDatos();
     }
 
+    
+
     private void cargarDatos() {
         try {
             productos = dbManager.cargarProductos();
@@ -94,8 +96,8 @@ public class Sistema {
         return null;
     }
 
-    public List<Venta> getVentas() {
-        return ventas;
+     public List<Venta> getVentas() {
+        return dbManager.obtenerVentas();
     }
 
     public void agregarVenta(Venta venta) {

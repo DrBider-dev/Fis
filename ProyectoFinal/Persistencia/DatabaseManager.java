@@ -125,8 +125,10 @@ public class DatabaseManager {
 
     private void cargarLineasVenta(Venta venta) throws SQLException {
         String sql = "SELECT lv.id AS lv_id, lv.cantidad AS lv_cantidad, " +
-             "p.id AS producto_id, p.nombre, p.categoria, p.precio, p.cantidad, p.fecha_vencimiento " +
-             "FROM lineas_venta lv JOIN productos p ON lv.producto_id = p.id " +
+             "p.id AS producto_id, p.nombre, p.categoria, p.precio, p.cantidad, p.fecha_vencimiento, " +
+             "p.proveedor AS proveedor " +
+             "FROM lineas_venta lv " +
+             "JOIN productos p ON lv.producto_id = p.id " +
              "WHERE lv.venta_id = ?";
         
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
@@ -163,5 +165,23 @@ public class DatabaseManager {
              ResultSet rs = stmt.executeQuery(sql)) {
             return rs.next() ? rs.getInt("max_id") + 1 : 1;
         }
+    }
+
+    public List<Venta> obtenerVentas() {
+        List<Venta> ventas = new ArrayList<>();
+        String sql = "SELECT id, fecha, total FROM ventas ORDER BY fecha DESC";
+        
+        try (Statement stmt = connection.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            while (rs.next()) {
+                Venta venta = new Venta(rs.getInt("id"));
+                venta.setFecha(rs.getDate("fecha"));
+                venta.setTotal(rs.getDouble("total"));
+                ventas.add(venta);
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Error al obtener ventas", e);
+        }
+        return ventas;
     }
 }

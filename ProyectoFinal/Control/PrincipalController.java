@@ -73,6 +73,8 @@ public class PrincipalController {
         // Nuevos eventos para ventas
         vista.getBtnModificarVenta().addActionListener(e -> modificarCantidadVenta());
         vista.getBtnEliminarVenta().addActionListener(e -> eliminarProductoVenta());
+
+        vista.getBtnActualizarHistorial().addActionListener(e -> cargarHistorialVentas());
     }
 
     private void agregarProductoVenta() {
@@ -173,6 +175,7 @@ public class PrincipalController {
         // Reiniciar venta
         reiniciarVenta();
         actualizarTablaInventario();
+        cargarHistorialVentas();
     }
 
     private void reiniciarVenta() {
@@ -442,6 +445,20 @@ public class PrincipalController {
             
             // Actualizar total
             vista.getLblTotalVenta().setText(String.format("Total: $%.2f", ventaActual.getTotal()));
+        }
+    }
+
+        private void cargarHistorialVentas() {
+        DefaultTableModel model = (DefaultTableModel) vista.getTablaHistorial().getModel();
+        model.setRowCount(0);
+        
+        for (Venta venta : sistema.getVentas()) {
+            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm");
+            model.addRow(new Object[]{
+                venta.getId(),
+                sdf.format(venta.getFecha()),
+                String.format("$%,.2f", venta.getTotal())
+            });
         }
     }
 

@@ -25,6 +25,10 @@ public class PrincipalView extends JFrame {
     public JTextField txtCantidad;
     public JTextField txtProductoId;
 
+    public JPanel panelHistorial; // Nuevo panel para historial
+    public JTable tablaHistorial; // Nueva tabla para historial
+    public JButton btnActualizarHistorial; // Botón para refrescar historial
+
     public PrincipalView() {
         // Apply FlatLaf look-and-feel for a modern UI
         try {
@@ -143,6 +147,32 @@ public class PrincipalView extends JFrame {
         bottomVentas.add(btnEliminarVenta);
         
         panelVentas.add(bottomVentas, BorderLayout.SOUTH);
+
+
+        // --- NUEVO TAB: HISTORIAL DE VENTAS ---
+        panelHistorial = new JPanel(new BorderLayout(10, 10));
+        panelHistorial.setBorder(new EmptyBorder(10, 10, 10, 10));
+        
+        // Configurar tabla de historial
+        tablaHistorial = new JTable();
+        tablaHistorial.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {},
+            new String [] {"ID Venta", "Fecha", "Total"}
+        ));
+        styleTable(tablaHistorial);
+        JScrollPane scrollHistorial = new JScrollPane(tablaHistorial);
+        panelHistorial.add(scrollHistorial, BorderLayout.CENTER);
+        
+        // Botón para actualizar historial
+        JPanel bottomHistorial = new JPanel(new FlowLayout(FlowLayout.RIGHT, 15, 5));
+        bottomHistorial.setOpaque(false);
+        btnActualizarHistorial = new JButton();
+        styleButton(btnActualizarHistorial, "Actualizar Historial");
+        bottomHistorial.add(btnActualizarHistorial);
+        panelHistorial.add(bottomHistorial, BorderLayout.SOUTH);
+        
+        // Agregar pestaña al tabbedPane
+        tabbedPane.addTab("Historial", panelHistorial);
     }
 
     private JLabel createLabel(String text) {
@@ -187,5 +217,17 @@ public class PrincipalView extends JFrame {
         tablaVenta.setModel(model);
     }
 
+    public JTable getTablaHistorial() {
+        return tablaHistorial;
+    }
+    
+    public JButton getBtnActualizarHistorial() {
+        return btnActualizarHistorial;
+    }
+    
+    // Setter para el modelo de la tabla de historial
+    public void setModeloTablaHistorial(TableModel model) {
+        tablaHistorial.setModel(model);
+    }
     
 }
