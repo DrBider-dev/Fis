@@ -43,7 +43,6 @@ public class PrincipalView extends JFrame {
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
     }
 
-    @SuppressWarnings("unchecked")
     private void initComponents() {
         tabbedPane = new JTabbedPane();
         panelVentas = new JPanel();
