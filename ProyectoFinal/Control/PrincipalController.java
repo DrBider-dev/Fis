@@ -3,6 +3,8 @@ package Control;
 import Model.*;
 import View.PrincipalView;
 
+import java.awt.Dimension;
+import java.awt.Font;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -67,6 +69,10 @@ public class PrincipalController {
 
         // Evento para eliminar producto
         vista.getBtnEliminarProducto().addActionListener(e -> eliminarProducto());
+
+        // Nuevos eventos para ventas
+        vista.getBtnModificarVenta().addActionListener(e -> modificarCantidadVenta());
+        vista.getBtnEliminarVenta().addActionListener(e -> eliminarProductoVenta());
     }
 
     private void agregarProductoVenta() {
@@ -120,17 +126,49 @@ public class PrincipalController {
         for (LineaVenta linea : ventaActual.getLineasVenta()) {
             Producto producto = linea.getProducto();
             producto.actualizarStock(-linea.getCantidad());
-            // Actualizar el producto en la base de datos
             sistema.actualizarProducto(producto);
         }
         
         // Guardar venta
         sistema.agregarVenta(ventaActual);
         
-        // Mostrar resumen
-        JOptionPane.showMessageDialog(vista, 
-            String.format("Venta finalizada!\nTotal: $%.2f", ventaActual.getTotal()),
-            "Venta Exitosa", JOptionPane.INFORMATION_MESSAGE);
+        // Construir factura detallada
+        StringBuilder factura = new StringBuilder();
+        factura.append("=== AUTOSERVICIO LOS PAISAS ===\n");
+        factura.append("Venta #").append(ventaActual.getId()).append("\n");
+        factura.append("Fecha: ").append(new SimpleDateFormat("dd/MM/yyyy HH:mm").format(new Date())).append("\n\n");
+        factura.append("Detalle de la venta:\n");
+        factura.append("------------------------------------------------\n");
+        
+        // Agregar cada producto con su información
+        for (LineaVenta linea : ventaActual.getLineasVenta()) {
+            factura.append(String.format(
+                "%-20s %4d x $%,9.2f   $%,9.2f\n",
+                linea.getProducto().getNombre(),
+                linea.getCantidad(),
+                linea.getProducto().getPrecio(),
+                linea.getSubtotal()
+            ));
+        }
+        
+        factura.append("------------------------------------------------\n");
+        factura.append(String.format("TOTAL: $%,.2f", ventaActual.getTotal()));
+        factura.append("\n\n¡Gracias por su compra!");
+        
+        // Mostrar factura en un diálogo
+        JTextArea textArea = new JTextArea(factura.toString());
+        textArea.setEditable(false);
+        textArea.setFont(new Font("Monospaced", Font.PLAIN, 14));
+        
+        JScrollPane scrollPane = new JScrollPane(textArea);
+        scrollPane.setPreferredSize(new Dimension(450, 300));
+        
+        JOptionPane.showMessageDialog(
+            vista, 
+            scrollPane, 
+            "Factura de Venta #" + ventaActual.getId(), 
+            JOptionPane.INFORMATION_MESSAGE
+        );
         
         // Reiniciar venta
         reiniciarVenta();
@@ -311,6 +349,99 @@ public class PrincipalController {
         if (confirm == JOptionPane.YES_OPTION) {
             sistema.eliminarProducto(idProducto);
             actualizarTablaInventario();
+        }
+    }
+
+    private void modificarCantidadVenta() {
+        int filaSeleccionada = vista.getTablaVenta().getSelectedRow();
+        if (filaSeleccionada == -1) {
+            JOptionPane.showMessageDialog(vista, "Seleccione un producto de la venta", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        
+        // Obtener datos de la fila seleccionada
+        int idProducto = (int) vista.getTablaVenta().getValueAt(filaSeleccionada, 0);
+        int cantidadActual = (int) vista.getTablaVenta().getValueAt(filaSeleccionada, 2);
+        
+        // Pedir nueva cantidad
+        String input = JOptionPane.showInputDialog(
+            vista, 
+            "Ingrese la nueva cantidad:", 
+            "Modificar Cantidad", 
+            JOptionPane.QUESTION_MESSAGE
+        );
+        
+        if (input == null || input.isEmpty()) return;
+        
+        try {
+            int nuevaCantidad = Integer.parseInt(input);
+            Producto producto = sistema.buscarProducto(idProducto);
+            
+            // Verificar disponibilidad
+            int stockDisponible = producto.getCantidad() + cantidadActual; // Stock + lo ya reservado
+            if (nuevaCantidad > stockDisponible) {
+                JOptionPane.showMessageDialog(vista, 
+                    "Stock insuficiente. Disponible: " + stockDisponible, 
+                    "Error", 
+                    JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            
+            // Buscar la línea de venta correspondiente
+            for (LineaVenta linea : ventaActual.getLineasVenta()) {
+                if (linea.getProducto().getId() == idProducto) {
+                    // Ajustar stock
+                    producto.actualizarStock(cantidadActual - nuevaCantidad); // Diferencia
+                    
+                    // Actualizar línea de venta
+                    linea.setCantidad(nuevaCantidad);
+                    
+                    // Actualizar tabla
+                    vista.getTablaVenta().setValueAt(nuevaCantidad, filaSeleccionada, 2);
+                    vista.getTablaVenta().setValueAt(linea.getSubtotal(), filaSeleccionada, 4);
+                    
+                    // Actualizar total
+                    vista.getLblTotalVenta().setText(String.format("Total: $%.2f", ventaActual.getTotal()));
+                    break;
+                }
+            }
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(vista, "Ingrese un número válido", "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void eliminarProductoVenta() {
+        int filaSeleccionada = vista.getTablaVenta().getSelectedRow();
+        if (filaSeleccionada == -1) {
+            JOptionPane.showMessageDialog(vista, "Seleccione un producto de la venta", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        
+        // Obtener datos de la fila seleccionada
+        int idProducto = (int) vista.getTablaVenta().getValueAt(filaSeleccionada, 0);
+        int cantidad = (int) vista.getTablaVenta().getValueAt(filaSeleccionada, 2);
+        
+        int confirm = JOptionPane.showConfirmDialog(
+            vista, 
+            "¿Eliminar este producto de la venta?", 
+            "Confirmar eliminación", 
+            JOptionPane.YES_NO_OPTION
+        );
+        
+        if (confirm == JOptionPane.YES_OPTION) {
+            Producto producto = sistema.buscarProducto(idProducto);
+            
+            // Devolver stock
+            producto.actualizarStock(cantidad);
+            
+            // Eliminar línea de venta
+            ventaActual.getLineasVenta().removeIf(linea -> linea.getProducto().getId() == idProducto);
+            
+            // Actualizar tabla
+            ((DefaultTableModel) vista.getTablaVenta().getModel()).removeRow(filaSeleccionada);
+            
+            // Actualizar total
+            vista.getLblTotalVenta().setText(String.format("Total: $%.2f", ventaActual.getTotal()));
         }
     }
 

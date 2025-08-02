@@ -14,6 +14,8 @@ public class PrincipalView extends JFrame {
     public JButton btnAgregarProductoInv;
     public JButton btnFinalizarVenta;
     public JButton btnEliminarProducto;
+    public JButton btnModificarVenta;
+    public JButton btnEliminarVenta;
     public JLabel lblTotalVenta;
     public JPanel panelInventario;
     public JPanel panelVentas;
@@ -131,6 +133,16 @@ public class PrincipalView extends JFrame {
         bottomInv.add(btnEliminarProducto);
 
         panelInventario.add(bottomInv, BorderLayout.SOUTH);
+
+        btnModificarVenta = new JButton();
+        styleButton(btnModificarVenta, "Modificar Cantidad");
+        bottomVentas.add(btnModificarVenta);
+
+        btnEliminarVenta = new JButton();
+        styleButton(btnEliminarVenta, "Eliminar Producto");
+        bottomVentas.add(btnEliminarVenta);
+        
+        panelVentas.add(bottomVentas, BorderLayout.SOUTH);
     }
 
     private JLabel createLabel(String text) {
@@ -165,6 +177,8 @@ public class PrincipalView extends JFrame {
     public JButton getBtnActualizarStock() { return btnActualizarStock; }
     public JButton getBtnAgregarProductoInv() { return btnAgregarProductoInv; }
     public JButton getBtnEliminarProducto() { return btnEliminarProducto; }
+    public JButton getBtnModificarVenta() { return btnModificarVenta; }
+    public JButton getBtnEliminarVenta() { return btnEliminarVenta; }
 
     /**
      * Setter para actualizar el modelo de la tabla de ventas desde el controlador

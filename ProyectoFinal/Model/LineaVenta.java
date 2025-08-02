@@ -18,4 +18,22 @@ public class LineaVenta {
     public int getCantidad() { return cantidad; }
     public double getSubtotal() { return subtotal; }
     public Producto getProducto() { return producto; }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public void setCantidad(int cantidad) {
+        this.cantidad = cantidad;
+    }
+
+    public void setSubtotal(double subtotal) {
+        this.subtotal = subtotal;
+    }
+
+    public void setProducto(Producto producto) {
+        this.producto = producto;
+    }
+
+    
 }
