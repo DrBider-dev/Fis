@@ -20,6 +20,7 @@ public class PrincipalController {
     private DefaultTableModel modeloTablaInventario;
     Date dateVencimiento;
     String textoVencimiento;
+
     public PrincipalController(PrincipalView vista, Sistema sistema) {
         this.vista = vista;
         this.sistema = sistema;
@@ -28,6 +29,14 @@ public class PrincipalController {
         configurarTablas();
         configurarEventos();
         actualizarTablaInventario();
+    }
+
+    public boolean isAdmin() {
+        if (sistema.getUsuarioActual() instanceof Administrador) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     private void inicializarVenta() {
@@ -185,6 +194,10 @@ public class PrincipalController {
     }
 
     private void actualizarStock() {
+        if (!isAdmin()) {
+            JOptionPane.showMessageDialog(vista, "Solo los administradores pueden actualizar el stock", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
         int filaSeleccionada = vista.getTablaInventario().getSelectedRow();
         if (filaSeleccionada == -1) {
             JOptionPane.showMessageDialog(vista, "Seleccione un producto", "Error", JOptionPane.ERROR_MESSAGE);
@@ -275,6 +288,11 @@ public class PrincipalController {
     }
 
     private void agregarNuevoProducto() {
+        if (!isAdmin()) {
+            JOptionPane.showMessageDialog(vista, "Solo los administradores pueden agregar productos", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
         // Crear un formulario simple para nuevo producto
         JTextField txtId = new JTextField();
         JTextField txtNombre = new JTextField();
@@ -334,6 +352,11 @@ public class PrincipalController {
     }
 
     private void eliminarProducto() {
+        if (!isAdmin()) {
+            JOptionPane.showMessageDialog(vista, "Solo los administradores pueden eliminar productos", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
         int filaSeleccionada = vista.getTablaInventario().getSelectedRow();
         if (filaSeleccionada == -1) {
             JOptionPane.showMessageDialog(vista, "Seleccione un producto", "Error", JOptionPane.ERROR_MESSAGE);
