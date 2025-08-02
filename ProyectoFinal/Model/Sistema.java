@@ -37,11 +37,11 @@ public class Sistema {
 
     private void cargarDatosIniciales() {
         // Productos de ejemplo
-        productos.add(new Producto(1, "Arroz", "Alimentos", 2500, 50, null));
-        productos.add(new Producto(2, "Leche", "Lácteos", 3200, 30, null));
-        productos.add(new Producto(3, "Jabón", "Aseo", 1800, 40, null));
-        productos.add(new Producto(4, "Café", "Bebidas", 4500, 25, null));
-        productos.add(new Producto(5, "Atún", "Enlatados", 3000, 35, null));
+        productos.add(new Producto(1, "Arroz", "Alimentos", 2500, 50, null, "Diana"));
+        productos.add(new Producto(2, "Leche", "Lácteos", 3200, 30, null, "Alqueria"));
+        productos.add(new Producto(3, "Jabón", "Aseo", 1800, 40, null, "Dersa"));
+        productos.add(new Producto(4, "Café", "Bebidas", 4500, 25, null, "Nutresa"));
+        productos.add(new Producto(5, "Atún", "Enlatados", 3000, 35, null, "Atunec"));
         
         // Guardar productos iniciales en la base de datos
         for (Producto producto : productos) {
@@ -74,6 +74,17 @@ public class Sistema {
         }
     }
 
+    public void eliminarProducto(int idProducto) {
+        // Eliminar de la lista en memoria
+        productos.removeIf(p -> p.getId() == idProducto);
+        
+        // Eliminar de la base de datos
+        try {
+            dbManager.eliminarProducto(idProducto);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
     public Producto buscarProducto(int id) {
         for (Producto producto : productos) {
             if (producto.getId() == id) {

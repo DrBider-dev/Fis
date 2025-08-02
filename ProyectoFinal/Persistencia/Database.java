@@ -37,11 +37,12 @@ public class Database {
                 "categoria TEXT," +
                 "precio REAL NOT NULL," +
                 "cantidad INTEGER NOT NULL," +
-                "fecha_vencimiento TEXT)";
+                "fecha_vencimiento DATE," +
+                "proveedor TEXT)";
 
         String sqlVentas = "CREATE TABLE IF NOT EXISTS ventas (" +
                 "id INTEGER PRIMARY KEY," +
-                "fecha TEXT NOT NULL," +
+                "fecha DATE NOT NULL," +
                 "total REAL NOT NULL)";
 
         String sqlLineasVenta = "CREATE TABLE IF NOT EXISTS lineas_venta (" +

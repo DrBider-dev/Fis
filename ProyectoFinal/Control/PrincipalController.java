@@ -3,6 +3,9 @@ package Control;
 import Model.*;
 import View.PrincipalView;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 
@@ -13,7 +16,8 @@ public class PrincipalController {
     private Venta ventaActual;
     private DefaultTableModel modeloTablaVenta;
     private DefaultTableModel modeloTablaInventario;
-
+    Date dateVencimiento;
+    String textoVencimiento;
     public PrincipalController(PrincipalView vista, Sistema sistema) {
         this.vista = vista;
         this.sistema = sistema;
@@ -39,7 +43,7 @@ public class PrincipalController {
         vista.getTablaVenta().setModel(modeloTablaVenta);
         
         // Configurar tabla de inventario
-        modeloTablaInventario = new DefaultTableModel(new Object[]{"ID", "Nombre", "Categoría", "Precio", "Cantidad", "Vencimiento"}, 0) {
+        modeloTablaInventario = new DefaultTableModel(new Object[]{"ID", "Nombre", "Categoría", "Precio", "Cantidad", "Vencimiento", "Proveedor"}, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
                 return false;
@@ -60,6 +64,9 @@ public class PrincipalController {
         
         // Evento para agregar nuevo producto
         vista.getBtnAgregarProductoInv().addActionListener(e -> agregarNuevoProducto());
+
+        // Evento para eliminar producto
+        vista.getBtnEliminarProducto().addActionListener(e -> eliminarProducto());
     }
 
     private void agregarProductoVenta() {
@@ -146,16 +153,83 @@ public class PrincipalController {
         int idProducto = (int) vista.getTablaInventario().getValueAt(filaSeleccionada, 0);
         Producto producto = sistema.buscarProducto(idProducto);
         
-        String input = JOptionPane.showInputDialog(vista, "Ingrese la cantidad a añadir:", "Actualizar Stock", JOptionPane.QUESTION_MESSAGE);
-        if (input == null || input.isEmpty()) return;
+        // Crear formulario con los valores actuales del producto
+        JTextField txtId = new JTextField(String.valueOf(producto.getId()));
+        txtId.setEditable(false); // ID no editable
         
-        try {
-            int cantidad = Integer.parseInt(input);
-            producto.actualizarStock(cantidad);
-            sistema.actualizarProducto(producto); // Actualizar en la base de datos
-            actualizarTablaInventario();
-        } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(vista, "Ingrese un número válido", "Error", JOptionPane.ERROR_MESSAGE);
+        JTextField txtNombre = new JTextField(producto.getNombre());
+        JTextField txtCategoria = new JTextField(producto.getCategoria());
+        JTextField txtPrecio = new JTextField(String.valueOf(producto.getPrecio()));
+        JTextField txtCantidad = new JTextField(String.valueOf(producto.getCantidad()));
+        
+        // Formatear fecha (asumiendo que tienes getFechaVencimiento())
+        SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
+        String fechaStr = producto.getFechaVencimiento() != null ? 
+                        sdf.format(producto.getFechaVencimiento()) : "";
+        JTextField txtVencimiento = new JTextField(fechaStr);
+        
+        JTextField txtProveedor = new JTextField(producto.getProveedor());
+        
+        Object[] campos = {
+            "ID:", txtId,
+            "Nombre:", txtNombre,
+            "Categoría:", txtCategoria,
+            "Precio:", txtPrecio,
+            "Cantidad:", txtCantidad,
+            "Vencimiento (dd-MM-yyyy):", txtVencimiento,
+            "Proveedor:", txtProveedor
+        };
+        
+        int opcion = JOptionPane.showConfirmDialog(
+            vista, 
+            campos, 
+            "Editar Producto", 
+            JOptionPane.OK_CANCEL_OPTION
+        );
+        
+        if (opcion == JOptionPane.OK_OPTION) {
+            try {
+                // Validar campos obligatorios
+                if (txtNombre.getText().isEmpty() || 
+                    txtCategoria.getText().isEmpty() || 
+                    txtProveedor.getText().isEmpty()) {
+                    JOptionPane.showMessageDialog(vista, "Complete todos los campos", "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                
+                // Parsear datos
+                String nombre = txtNombre.getText();
+                String categoria = txtCategoria.getText();
+                double precio = Double.parseDouble(txtPrecio.getText());
+                int cantidad = Integer.parseInt(txtCantidad.getText());
+                String proveedor = txtProveedor.getText();
+                
+                // Parsear fecha
+                Date fechaVen = null;
+                if (!txtVencimiento.getText().isEmpty()) {
+                    try {
+                        fechaVen = sdf.parse(txtVencimiento.getText());
+                    } catch (Exception e) {
+                        JOptionPane.showMessageDialog(vista, "Formato de fecha inválido (dd-MM-yyyy)", "Error", JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
+                }
+                
+                // Actualizar el objeto producto
+                producto.setNombre(nombre);
+                producto.setCategoria(categoria);
+                producto.setPrecio(precio);
+                producto.setCantidad(cantidad);  // Reemplazar cantidad (no sumar)
+                producto.setFechaVencimiento(fechaVen);
+                producto.setProveedor(proveedor);
+                
+                // Guardar en base de datos
+                sistema.actualizarProducto(producto);
+                actualizarTablaInventario();
+                
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(vista, "Valores numéricos inválidos", "Error", JOptionPane.ERROR_MESSAGE);
+            }
         }
     }
 
@@ -166,32 +240,77 @@ public class PrincipalController {
         JTextField txtCategoria = new JTextField();
         JTextField txtPrecio = new JTextField();
         JTextField txtCantidad = new JTextField();
+        JTextField txtVencimiento = new JTextField();
+        JTextField txtProveedor = new JTextField();
         
         Object[] campos = {
             "ID:", txtId,
             "Nombre:", txtNombre,
             "Categoría:", txtCategoria,
             "Precio:", txtPrecio,
-            "Cantidad:", txtCantidad
+            "Cantidad:", txtCantidad,
+            "Vencimiento:", txtVencimiento,
+            "Proveedor:", txtProveedor
         };
         
         int opcion = JOptionPane.showConfirmDialog(vista, campos, "Nuevo Producto", JOptionPane.OK_CANCEL_OPTION);
         if (opcion == JOptionPane.OK_OPTION) {
             try {
-                int id = Integer.parseInt(txtId.getText());
+                int id = -1;
+                if (!txtId.getText().isEmpty()) {
+                    id = Integer.parseInt(txtId.getText());
+                }
                 String nombre = txtNombre.getText();
                 String categoria = txtCategoria.getText();
                 double precio = Double.parseDouble(txtPrecio.getText());
                 int cantidad = Integer.parseInt(txtCantidad.getText());
+                textoVencimiento = txtVencimiento.getText();
+                String proveedor = txtProveedor.getText();
+                if (id == -1 || nombre.isEmpty() || categoria.isEmpty() || textoVencimiento.isEmpty() || proveedor.isEmpty()) {
+                    JOptionPane.showMessageDialog(vista, "Por favor, complete todos los campos", "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
+                SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy");
+                
+                try {
+                    dateVencimiento = formatter.parse(textoVencimiento);  // Parsear el String Ven
+                    
+                } catch (Exception e) {
+                    JOptionPane.showMessageDialog(null, "Inserte la Fecha en formato: dd-MM-yyyy");
+                    e.printStackTrace();  // Manejo de excepciones si el formato es incorrecto
+                }
                 
                 // Crear nuevo producto (sin fecha de vencimiento por ahora)
-                Producto nuevoProducto = new Producto(id, nombre, categoria, precio, cantidad, null);
+                Producto nuevoProducto = new Producto(id, nombre, categoria, precio, cantidad, dateVencimiento , proveedor);
                 sistema.agregarProducto(nuevoProducto); // Esto guarda en la base de datos
                 actualizarTablaInventario();
                 
             } catch (NumberFormatException ex) {
                 JOptionPane.showMessageDialog(vista, "Ingrese valores válidos", "Error", JOptionPane.ERROR_MESSAGE);
             }
+        }
+    }
+
+    private void eliminarProducto() {
+        int filaSeleccionada = vista.getTablaInventario().getSelectedRow();
+        if (filaSeleccionada == -1) {
+            JOptionPane.showMessageDialog(vista, "Seleccione un producto", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        
+        int idProducto = (int) vista.getTablaInventario().getValueAt(filaSeleccionada, 0);
+        
+        int confirm = JOptionPane.showConfirmDialog(
+            vista, 
+            "¿Está seguro de eliminar este producto?",
+            "Confirmar eliminación",
+            JOptionPane.YES_NO_OPTION
+        );
+        
+        if (confirm == JOptionPane.YES_OPTION) {
+            sistema.eliminarProducto(idProducto);
+            actualizarTablaInventario();
         }
     }
 
@@ -204,7 +323,8 @@ public class PrincipalController {
                 producto.getCategoria(),
                 producto.getPrecio(),
                 producto.getCantidad(),
-                producto.getFechaVencimiento() != null ? producto.getFechaVencimiento().toString() : "N/A"
+                producto.getFechaVencimiento() != null ? producto.getFechaVencimiento().toString() : "N/A",
+                producto.getProveedor()
             });
         }
     }

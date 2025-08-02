@@ -17,8 +17,8 @@ public class DatabaseManager {
 
     // Operaciones para Productos
     public void guardarProducto(Producto producto) throws SQLException {
-        String sql = "INSERT OR REPLACE INTO productos(id, nombre, categoria, precio, cantidad, fecha_vencimiento) " +
-                     "VALUES(?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT OR REPLACE INTO productos(id, nombre, categoria, precio, cantidad, fecha_vencimiento, proveedor) " +
+                     "VALUES(?, ?, ?, ?, ?, ?, ?)";
         
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
             pstmt.setInt(1, producto.getId());
@@ -32,6 +32,7 @@ public class DatabaseManager {
             } else {
                 pstmt.setNull(6, Types.DATE);
             }
+            pstmt.setString(7, producto.getProveedor());
             
             pstmt.executeUpdate();
         }
@@ -51,7 +52,8 @@ public class DatabaseManager {
                     rs.getString("categoria"),
                     rs.getDouble("precio"),
                     rs.getInt("cantidad"),
-                    rs.getDate("fecha_vencimiento")
+                    rs.getDate("fecha_vencimiento"),
+                    rs.getString("proveedor")
                 );
                 productos.add(producto);
             }
@@ -138,7 +140,8 @@ public class DatabaseManager {
                         rs.getString("categoria"),
                         rs.getDouble("precio"),
                         rs.getInt("cantidad"),
-                        rs.getDate("fecha_vencimiento")
+                        rs.getDate("fecha_vencimiento"),
+                        rs.getString("proveedor")
                     );
                     
                     // Crear línea de venta
